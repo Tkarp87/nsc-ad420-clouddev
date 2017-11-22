@@ -20,6 +20,19 @@ schemes:
   - http
 paths:
   /user:
+    get:
+      tags:
+        - user
+      summary: get all users
+      description: This can only be done by the logged in user.
+      operationId: createUser
+      produces:
+        - application/xml
+        - application/json
+      responses:
+        default:
+          description: successful operation
+  /user:
     post:
       tags:
         - user
@@ -39,102 +52,7 @@ paths:
       responses:
         default:
           description: successful operation
-  /user/createWithArray:
-    post:
-      tags:
-        - user
-      summary: Creates list of users with given input array
-      description: ''
-      operationId: createUsersWithArrayInput
-      produces:
-        - application/xml
-        - application/json
-      parameters:
-        - in: body
-          name: body
-          description: List of user object
-          required: true
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/User'
-      responses:
-        default:
-          description: successful operation
-  /user/createWithList:
-    post:
-      tags:
-        - user
-      summary: Creates list of users with given input array
-      description: ''
-      operationId: createUsersWithListInput
-      produces:
-        - application/xml
-        - application/json
-      parameters:
-        - in: body
-          name: body
-          description: List of user object
-          required: true
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/User'
-      responses:
-        default:
-          description: successful operation
-  /user/login:
-    get:
-      tags:
-        - user
-      summary: Logs user into the system
-      description: ''
-      operationId: loginUser
-      produces:
-        - application/xml
-        - application/json
-      parameters:
-        - name: username
-          in: query
-          description: The user name for login
-          required: true
-          type: string
-        - name: password
-          in: query
-          description: The password for login in clear text
-          required: true
-          type: string
-      responses:
-        '200':
-          description: successful operation
-          schema:
-            type: string
-          headers:
-            X-Rate-Limit:
-              type: integer
-              format: int32
-              description: calls per hour allowed by the user
-            X-Expires-After:
-              type: string
-              format: date-time
-              description: date in UTC when token expires
-        '400':
-          description: Invalid username/password supplied
-  /user/logout:
-    get:
-      tags:
-        - user
-      summary: Logs out current logged in user session
-      description: ''
-      operationId: logoutUser
-      produces:
-        - application/xml
-        - application/json
-      parameters: []
-      responses:
-        default:
-          description: successful operation
-  '/user/{username}':
+  /user/{username}:
     get:
       tags:
         - user
@@ -205,7 +123,7 @@ paths:
           description: Invalid username supplied
         '404':
           description: User not found
-  /task:
+  /user/{userid}/task:
     post:
       tags:
         - task
@@ -262,80 +180,7 @@ paths:
         - app_auth:
             - 'write:tasks'
             - 'read:tasks'
-  /task/findByStatus:
-    get:
-      tags:
-        - task
-      summary: Finds tasks by status
-      description: Multiple status values can be provided with comma separated strings
-      operationId: findTasksByStatus
-      produces:
-        - application/xml
-        - application/json
-      parameters:
-        - name: status
-          in: query
-          description: Status values that need to be considered for filter
-          required: true
-          type: array
-          items:
-            type: string
-            enum:
-              - new
-              - in_progress
-              - blocked
-              - completed
-            default: new
-          collectionFormat: multi
-      responses:
-        '200':
-          description: successful operation
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Task'
-        '400':
-          description: Invalid status value
-      security:
-        - app_auth:
-            - 'write:tasks'
-            - 'read:tasks'
-  /task/findByTags:
-    get:
-      tags:
-        - task
-      summary: Finds Tasks by tags
-      description: >-
-        Muliple tags can be provided with comma separated strings. Use        
-        tag1, tag2, tag3 for testing.
-      operationId: findTasksByTags
-      produces:
-        - application/xml
-        - application/json
-      parameters:
-        - name: tags
-          in: query
-          description: Tags to filter by
-          required: true
-          type: array
-          items:
-            type: string
-          collectionFormat: multi
-      responses:
-        '200':
-          description: successful operation
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Task'
-        '400':
-          description: Invalid tag value
-      security:
-        - app_auth:
-            - 'write:tasks'
-            - 'read:tasks'
-      deprecated: true
-  '/task/{taskId}':
+  /user/{userid}/task/{taskId}:
     get:
       tags:
         - task
@@ -366,11 +211,11 @@ paths:
     post:
       tags:
         - task
-      summary: Updates a task in the store with form data
+      summary: Updates a task in the store with Task json object
       description: ''
       operationId: updateTaskWithForm
       consumes:
-        - application/x-www-form-urlencoded
+        - application/json
       produces:
         - application/xml
         - application/json
@@ -381,36 +226,12 @@ paths:
           required: true
           type: integer
           format: int64
-        - name: title
-          in: formData
-          description: Updated title of the task
-          required: false
-          type: string
-        - name: creationDate
-          in: formData
-          description: Updated creation date of the task
-          required: false
-          type: string
-        - name: dueDate
-          in: formData
-          description: Updated due date of the task
-          required: false
-          type: string
-        - name: complitionDate
-          in: formData
-          description: Updated completion date of the task
-          required: false
-          type: string
-        - name: status
-          in: formData
-          description: Updated status of the task
-          required: false
-          type: string
-        - name: owner
-          in: formData
-          description: Updated owner of the task
-          required: false
-          type: string
+        - name: taskObj,
+         description": "task object that needs to be added to the store",
+         required": true,
+         type": "Task",
+         paramType": "body"
+      }
       responses:
         '405':
           description: Invalid input
